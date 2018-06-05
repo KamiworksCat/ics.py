@@ -21,3 +21,6 @@ doc/_build/*
 .cache/
 .coverage
 htmlcov
+
+.idea
+.pytest_cache
