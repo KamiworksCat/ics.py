@@ -164,6 +164,13 @@ class Event(Component):
     @end.setter
     def end(self, value):
         value = get_arrow(value)
+        """
+        Reason why model break after upgrading to the latest model:
+        The model was comparing value to a NoneType object all along
+        No idea why arrow 0.4.2 allow the comparison to happen but I have added checks
+        """
+        if not self._begin:
+            raise ValueError('Please input begin first')
         if value and value < self._begin:
             raise ValueError('End must be after begin')
 

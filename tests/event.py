@@ -72,9 +72,9 @@ class TestEvent(unittest.TestCase):
             e.end = "1999/10/10"
 
     def test_begin_after_end(self):
-        e = Event(end="19991010")
-        with self.assertRaises(ValueError):
-            e.begin = "2013/10/10"
+        with self.assertRaises(ValueError) as error:
+            Event(end="19991010", begin="2013/10/10")
+            self.assertEqual('End must be after begin', error.exception)
 
     def test_end_with_prescision(self):
         e = Event(begin="1999/10/10")
