@@ -63,7 +63,6 @@ class TestContentLine(unittest.TestCase):
             got = ContentLine.parse(test)
             self.assertEqual(expected, got)
 
-
     # https://github.com/C4ptainCrunch/ics.py/issues/68
     def test_timezone_not_dropped(self):
         line = ContentLine.parse("DTSTART;TZID=Europe/Berlin:20151104T190000")

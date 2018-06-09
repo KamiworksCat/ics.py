@@ -1,6 +1,6 @@
 import unittest
 import pytest
-from datetime import timedelta as td, datetime as dt
+from datetime import timedelta as td
 import arrow
 from ics.event import Event
 from ics.icalendar import Calendar
@@ -11,6 +11,9 @@ CRLF = "\r\n"
 
 
 class TestEvent(unittest.TestCase):
+    def setUp(self):
+        self.date1 = '2016-06-10T20:10'
+        self.date2 = '2016-06-10T20:30'
 
     def test_event(self):
         e = Event(begin=0, end=20)
@@ -141,7 +144,7 @@ class TestEvent(unittest.TestCase):
 
         e5 = Event(begin="1993/05/24")
         e5.duration = {'days': 6, 'hours': 2}
-        self.assertEqual(e5.end, arrow.get("1993/05/30T02:00"))
+        self.assertEqual(e5.end, arrow.get("1993-05-30T02:00"))
         self.assertEqual(e5.duration, td(hours=146))
 
     def test_always_uid(self):
@@ -201,13 +204,13 @@ class TestEvent(unittest.TestCase):
         e.uid = "empty-uid"
 
         eq = CRLF.join(("BEGIN:VEVENT",
-                "DTSTAMP:20130101T000000Z",
-                "SUMMARY:Hello\\, with \\\\ special\\; chars and \\n newlines",
-                "DESCRIPTION:Every\\nwhere ! Yes\\, yes !",
-                "LOCATION:Here\\; too",
-                "TRANSP:OPAQUE",
-                "UID:empty-uid",
-                "END:VEVENT"))
+                        "DTSTAMP:20130101T000000Z",
+                        "SUMMARY:Hello\\, with \\\\ special\\; chars and \\n newlines",
+                        "DESCRIPTION:Every\\nwhere ! Yes\\, yes !",
+                        "LOCATION:Here\\; too",
+                        "TRANSP:OPAQUE",
+                        "UID:empty-uid",
+                        "END:VEVENT"))
         self.assertEqual(str(e), eq)
 
     def test_url_input(self):
@@ -295,70 +298,70 @@ class TestEvent(unittest.TestCase):
 
     def test_includes_disjoined(self):
         # disjoined events
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=20))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 50), duration=td(minutes=20))
+        event_a = Event(name='Test #1', begin=arrow.get('2016-06-10T20:10'), duration=td(minutes=20))
+        event_b = Event(name='Test #2', begin=arrow.get('2016-06-10T20:50'), duration=td(minutes=20))
         assert not event_a.includes(event_b)
         assert not event_b.includes(event_a)
 
     def test_includes_intersected(self):
         # intersected events
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 30), duration=td(minutes=30))
+        event_a = Event(name='Test #1', begin=arrow.get(self.date1), duration=td(minutes=30))
+        event_b = Event(name='Test #2', begin=arrow.get(self.date2), duration=td(minutes=30))
         assert not event_a.includes(event_b)
         assert not event_b.includes(event_a)
 
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 30), duration=td(minutes=30))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
+        event_a = Event(name='Test #1', begin=arrow.get(self.date2), duration=td(minutes=30))
+        event_b = Event(name='Test #2', begin=arrow.get(self.date1), duration=td(minutes=30))
         assert not event_a.includes(event_b)
         assert not event_b.includes(event_a)
 
     def test_includes_included(self):
         # included events
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 00), duration=td(minutes=60))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
+        event_a = Event(name='Test #1', begin=arrow.get('2016-06-10T20:00'), duration=td(minutes=60))
+        event_b = Event(name='Test #2', begin=arrow.get('2016-06-10T20:10'), duration=td(minutes=30))
         assert event_a.includes(event_b)
         assert not event_b.includes(event_a)
 
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 00), duration=td(minutes=60))
+        event_a = Event(name='Test #1', begin=arrow.get('2016-06-10T20:10'), duration=td(minutes=30))
+        event_b = Event(name='Test #2', begin=arrow.get('2016-06-10T20:00'), duration=td(minutes=60))
         assert not event_a.includes(event_b)
         assert event_b.includes(event_a)
 
     def test_intersects_disjoined(self):
         # disjoined events
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=20))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 50), duration=td(minutes=20))
+        event_a = Event(name='Test #1', begin=arrow.get('2016-06-10T20:10'), duration=td(minutes=20))
+        event_b = Event(name='Test #2', begin=arrow.get('2016-06-10T20:50'), duration=td(minutes=20))
         assert not event_a.intersects(event_b)
         assert not event_b.intersects(event_a)
 
     def test_intersects_intersected(self):
         # intersected events
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 30), duration=td(minutes=30))
+        event_a = Event(name='Test #1', begin=arrow.get(self.date1), duration=td(minutes=30))
+        event_b = Event(name='Test #2', begin=arrow.get(self.date2), duration=td(minutes=30))
         assert event_a.intersects(event_b)
         assert event_b.intersects(event_a)
 
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 30), duration=td(minutes=30))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
+        event_a = Event(name='Test #1', begin=arrow.get(self.date2), duration=td(minutes=30))
+        event_b = Event(name='Test #2', begin=arrow.get(self.date1), duration=td(minutes=30))
         assert event_a.intersects(event_b)
         assert event_b.intersects(event_a)
 
     def test_intersects_included(self):
         # included events
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 00), duration=td(minutes=60))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
+        event_a = Event(name='Test #1', begin=arrow.get('2016-06-10T20:00'), duration=td(minutes=60))
+        event_b = Event(name='Test #2', begin=arrow.get('2016-06-10T20:10'), duration=td(minutes=30))
         assert event_a.intersects(event_b)
         assert event_b.intersects(event_a)
 
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 00), duration=td(minutes=60))
+        event_a = Event(name='Test #1', begin=arrow.get('2016-06-10T20:10'), duration=td(minutes=30))
+        event_b = Event(name='Test #2', begin=arrow.get('2016-06-10T20:00'), duration=td(minutes=60))
         assert event_a.intersects(event_b)
         assert event_b.intersects(event_a)
 
     def test_join_disjoined(self):
         # disjoined events
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=20))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 50), duration=td(minutes=20))
+        event_a = Event(name='Test #1', begin=arrow.get('2016-06-10T20:10'), duration=td(minutes=20))
+        event_b = Event(name='Test #2', begin=arrow.get('2016-06-10T20:50'), duration=td(minutes=20))
         with pytest.raises(ValueError):
             event_a.join(event_b)
         with pytest.raises(ValueError):
@@ -366,28 +369,28 @@ class TestEvent(unittest.TestCase):
 
     def test_join_intersected(self):
         # intersected events
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 30), duration=td(minutes=30))
+        event_a = Event(name='Test #1', begin=arrow.get(self.date1), duration=td(minutes=30))
+        event_b = Event(name='Test #2', begin=arrow.get(self.date2), duration=td(minutes=30))
         assert event_a.join(event_b).time_equals(Event(name=None, begin=event_a.begin, end=event_b.end))
         assert event_b.join(event_a).time_equals(Event(name=None, begin=event_a.begin, end=event_b.end))
 
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 30), duration=td(minutes=30))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
+        event_a = Event(name='Test #1', begin=arrow.get(self.date2), duration=td(minutes=30))
+        event_b = Event(name='Test #2', begin=arrow.get(self.date1), duration=td(minutes=30))
         assert event_a.join(event_b).time_equals(Event(name=None, begin=event_b.begin, end=event_a.end))
         assert event_b.join(event_a).time_equals(Event(name=None, begin=event_b.begin, end=event_a.end))
 
     def test_join_included(self):
         # included events
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 00), duration=td(minutes=60))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
+        event_a = Event(name='Test #1', begin=arrow.get('2016-06-10T20:00'), duration=td(minutes=60))
+        event_b = Event(name='Test #2', begin=arrow.get('2016-06-10T20:10'), duration=td(minutes=30))
         assert event_a.join(event_b).time_equals(Event(name=None, begin=event_a.begin, end=event_a.end))
         assert event_b.join(event_a).time_equals(Event(name=None, begin=event_a.begin, end=event_a.end))
 
-        event_a = Event(name='Test #1', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
-        event_b = Event(name='Test #2', begin=dt(2016, 6, 10, 20, 00), duration=td(minutes=60))
+        event_a = Event(name='Test #1', begin=arrow.get('2016-06-10T20:10'), duration=td(minutes=30))
+        event_b = Event(name='Test #2', begin=arrow.get('2016-06-10T20:00'), duration=td(minutes=60))
         assert event_a.join(event_b).time_equals(Event(name=None, begin=event_b.begin, end=event_b.end))
         assert event_b.join(event_a).time_equals(Event(name=None, begin=event_b.begin, end=event_b.end))
 
-        event = Event(uid='0', name='Test #1', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
+        event = Event(uid='0', name='Test #1', begin=arrow.get('2016-06-10T20:10'), duration=td(minutes=30))
         event.join(event)
-        assert event == Event(uid='0', name='Test #1', begin=dt(2016, 6, 10, 20, 10), duration=td(minutes=30))
+        assert event == Event(uid='0', name='Test #1', begin=arrow.get('2016-06-10T20:10'), duration=td(minutes=30))

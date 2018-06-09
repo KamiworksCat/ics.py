@@ -1,7 +1,7 @@
 import arrow
 import unittest
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from ics.alarm import AudioAlarm, DisplayAlarm
 from ics.icalendar import Calendar
 
@@ -21,7 +21,7 @@ class TestAlarm(unittest.TestCase):
         self.assertEqual(15 * 60, a.trigger.total_seconds())
 
     def test_alarm_datetime_trigger(self):
-        alarm_time = datetime(year=2016, month=1, day=1, hour=0, minute=0, second=0)
+        alarm_time = arrow.get('2016-01-01')
         a = DisplayAlarm(trigger=alarm_time)
         self.assertEqual(arrow.get(alarm_time), a.trigger)
 
@@ -61,7 +61,7 @@ class TestAlarm(unittest.TestCase):
         self.assertEqual(desired_output, str(a))
 
     def test_alarm_datetime_trigger_output(self):
-        alarm_time = datetime(year=2016, month=1, day=1, hour=0, minute=0, second=0)
+        alarm_time = arrow.get('2016-01-01')
         a = DisplayAlarm(trigger=alarm_time)
 
         desired_output = CRLF.join(['BEGIN:VALARM',
@@ -143,7 +143,7 @@ class TestDisplayAlarm(unittest.TestCase):
         c = Calendar(cal23)
         a = c.events[0].alarms[0]
 
-        alarm_time = datetime(year=2016, month=1, day=1, hour=0, minute=0, second=0)
+        alarm_time = arrow.get('2016-01-01')
         self.assertEqual(a.trigger, arrow.get(alarm_time))
         self.assertIsNone(a.repeat)
         self.assertIsNone(a.duration)
@@ -190,7 +190,7 @@ class TestAudioAlarm(unittest.TestCase):
     def test_alarm_without_attach_extraction(self):
         c = Calendar(cal24)
         a = c.events[0].alarms[0]
-        alarm_time = datetime(year=2016, month=1, day=1, hour=0, minute=0, second=0)
+        alarm_time = arrow.get('2016-01-01')
 
         self.assertEqual(a.action, 'AUDIO')
         self.assertEqual(a.trigger, arrow.get(alarm_time))
@@ -202,7 +202,7 @@ class TestAudioAlarm(unittest.TestCase):
     def test_alarm_with_attach_extraction(self):
         c = Calendar(cal25)
         a = c.events[0].alarms[0]
-        alarm_time = datetime(year=2016, month=1, day=1, hour=0, minute=0, second=0)
+        alarm_time = arrow.get('2016-01-01')
 
         self.assertEqual(a.action, 'AUDIO')
         self.assertEqual(a.trigger, arrow.get(alarm_time))
