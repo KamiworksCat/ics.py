@@ -330,7 +330,7 @@ class TestTodo(unittest.TestCase):
     def test_extract_due(self):
         c = Calendar(cal28)
         t = c.todos[0]
-        self.assertEqual(t.due, arrow.get('20180218T164800Z+00:00'))
+        self.assertEqual(t.due, arrow.get('2018-02-18T16:48:00Z'))
 
     def test_extract_due_error_duration(self):
         with self.assertRaises(ValueError):
