@@ -3,11 +3,11 @@ Ics.py : iCalendar for Humans
 
 `Original repository <https://github.com/C4ptainCrunch/ics.py>`_ (GitHub) - `Bugtracker and issues <https://github.com/C4ptainCrunch/ics.py/issues>`_ (GitHub) - `PyPi package <https://pypi.python.org/pypi/ics/>`_ (ics) - `Documentation <http://icspy.readthedocs.org/>`_ (Read The Docs).
 
-.. image:: https://travis-ci.org/C4ptainCrunch/ics.py.png?branch=master
-   :target: https://travis-ci.org/C4ptainCrunch/ics.py
+.. image:: https://travis-ci.org/KamiworksCat/ics.py.png?branch=master
+   :target: https://travis-ci.org/KamiworksCat/ics.py
 
-.. image:: https://coveralls.io/repos/C4ptainCrunch/ics.py/badge.png
-   :target: https://coveralls.io/r/C4ptainCrunch/ics.py
+.. image:: https://coveralls.io/repos/github/KamiworksCat/ics.py/badge.svg?branch=master
+   :target: https://coveralls.io/github/KamiworksCat/ics.py?branch=master
    :alt: Coverage
 
 .. image:: https://img.shields.io/github/license/c4ptaincrunch/ics.py.svg
