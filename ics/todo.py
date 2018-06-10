@@ -179,10 +179,14 @@ class Todo(Component):
         """
         Reason why model break after upgrading to the latest model:
         See event.py Line 167-171
+        Todo will compare against both _begin and _dtstamp
         """
         if self._begin:
             if value and value < self._begin:
                 raise ValueError('Due must be after begin')
+        elif self.dtstamp:
+            if value and value < self.dtstamp:
+                raise ValueError('Due must be after datetime stamp')
 
         self._due_time = value
 
