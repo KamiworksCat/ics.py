@@ -1,8 +1,10 @@
 import unittest
 import arrow
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from datetime import timezone
+
+from freezegun import freeze_time
 
 from ics.parse import Container
 from ics.alarm import AlarmFactory
@@ -36,9 +38,9 @@ class TestTodo(unittest.TestCase):
     def test_init_non_exclusive_arguments(self):
         # attributes percent, priority, begin, due, and duration
         # aren't tested here
-        dtstamp = datetime(2018, 2, 18, 12, 19, tzinfo=utc)
-        completed = dtstamp + timedelta(days=1)
-        created = dtstamp + timedelta(seconds=1)
+        dtstamp = arrow.get('2018-02-18T12:19')
+        completed = dtstamp.shift(days=1)
+        created = dtstamp.shift(seconds=1)
         alarm = [AlarmFactory().get_type_from_action('DISPLAY')]
         alarms = set()
         alarms.update(alarm)
@@ -55,9 +57,9 @@ class TestTodo(unittest.TestCase):
             alarms=alarm)
 
         self.assertEqual(t.uid, 'uid')
-        self.assertEqual(t.dtstamp, arrow.get(dtstamp))
-        self.assertEqual(t.completed, arrow.get(completed))
-        self.assertEqual(t.created, arrow.get(created))
+        self.assertEqual(t.dtstamp, dtstamp)
+        self.assertEqual(t.completed, completed)
+        self.assertEqual(t.created, created)
         self.assertEqual(t.description, 'description')
         self.assertEqual(t.location, 'location')
         self.assertEqual(t.name, 'name')
@@ -85,17 +87,17 @@ class TestTodo(unittest.TestCase):
             Todo(priority=10)
 
     def test_begin(self):
-        begin = datetime(2018, 2, 18, 12, 19, tzinfo=utc)
+        begin = arrow.get('2018-02-18T12:19')
         t = Todo(begin=begin)
-        self.assertEqual(t.begin, arrow.get(begin))
+        self.assertEqual(t.begin, begin)
 
         # begin after due
-        t = Todo(due=1)
         with self.assertRaises(ValueError):
+            t = Todo(due=1)
             t.begin = 2
 
     def test_duration(self):
-        begin = datetime(2018, 2, 18, 12, 19, tzinfo=utc)
+        begin = arrow.get('2018-02-18T12:19')
         t1 = Todo(begin=begin, duration={'hours': 1})
         self.assertEqual(t1.duration, timedelta(hours=1))
         t2 = Todo(begin=begin, duration=1)
@@ -104,22 +106,23 @@ class TestTodo(unittest.TestCase):
         self.assertEqual(t3.duration, timedelta(minutes=1))
 
         # Calculate duration from begin and due values
-        t4 = Todo(begin=begin, due=begin + timedelta(1))
+        t4 = Todo(begin=begin, due=begin.shift(days=1))
         self.assertEqual(t4.duration, timedelta(1))
 
     def test_due(self):
-        begin = datetime(2018, 2, 18, 12, 19, tzinfo=utc)
-        due = begin + timedelta(1)
-        t1 = Todo(due=due)
-        self.assertEqual(t1.due, begin + timedelta(1))
+        begin = arrow.get('2018-02-18T12:19')
+        due = begin.shift(days=1)
+        with freeze_time(begin.format()):
+            t1 = Todo(due=due)
+        self.assertEqual(t1.due, begin.shift(days=1))
 
-        due = begin - timedelta(1)
+        due = begin.shift(days=-1)
         with self.assertRaises(ValueError):
             Todo(begin=begin, due=due)
 
         # Calculate due from begin and duration value
         t2 = Todo(begin=begin, duration=1)
-        self.assertEqual(t2.due, begin + timedelta(1))
+        self.assertEqual(t2.due, begin.shift(days=1))
 
     def test_invalid_time_attributes(self):
         # due and duration must not be set at the same time
@@ -131,7 +134,7 @@ class TestTodo(unittest.TestCase):
             Todo(duration=1)
 
     def test_repr(self):
-        begin = datetime(2018, 2, 18, 12, 19, tzinfo=utc)
+        begin = arrow.get('2018-02-18T12:19')
 
         t1 = Todo()
         self.assertEqual(repr(t1), '<Todo>')
@@ -142,10 +145,11 @@ class TestTodo(unittest.TestCase):
         t3 = Todo(name='foo', begin=begin)
         self.assertEqual(repr(t3), "<Todo 'foo' begin:2018-02-18T12:19:00+00:00>")
 
-        t4 = Todo(name='foo', due=begin)
+        with freeze_time(begin.format()):
+            t4 = Todo(name='foo', due=begin)
         self.assertEqual(repr(t4), "<Todo 'foo' due:2018-02-18T12:19:00+00:00>")
 
-        t4 = Todo(name='foo', begin=begin, due=begin + timedelta(1))
+        t4 = Todo(name='foo', begin=begin, due=begin.shift(days=1))
         self.assertEqual(repr(t4),
                          "<Todo 'foo' begin:2018-02-18T12:19:00+00:00 due:2018-02-19T12:19:00+00:00>")
 
@@ -153,10 +157,13 @@ class TestTodo(unittest.TestCase):
         t1 = Todo()
         t2 = Todo(name='a')
         t3 = Todo(name='b')
-        t4 = Todo(due=10)
-        t5 = Todo(due=20)
-        due_time = datetime(2018, 2, 18, 12, 19, tzinfo=utc)
-        t6 = Todo(due=due_time)
+        with freeze_time('1970-01-01'):
+            t4 = Todo(due=10)
+            t5 = Todo(due=20)
+        due_time = arrow.get('2018-02-18T12:19')
+        due_datetime = due_time.datetime
+        with freeze_time(due_time.shift(days=-1).format()):
+            t6 = Todo(due=due_time)
 
         # Check comparison by name
         self.assertFalse(t1 < t1)
@@ -171,8 +178,8 @@ class TestTodo(unittest.TestCase):
         self.assertFalse(t5 < t4)
 
         # Check comparison with datetime
-        self.assertTrue(t4 < due_time)
-        self.assertFalse(t6 < due_time)
+        self.assertTrue(t4 < due_datetime)
+        self.assertFalse(t6 < due_datetime)
 
         # Check invalid call
         with self.assertRaises(NotImplementedError):
@@ -186,11 +193,14 @@ class TestTodo(unittest.TestCase):
         t1 = Todo()
         t2 = Todo(name='a')
         t3 = Todo(name='b')
-        t4 = Todo(due=10)
-        t5 = Todo(due=20)
-        due_time = datetime(2018, 2, 18, 12, 19, tzinfo=utc)
-        t6 = Todo(due=due_time)
-        t7 = Todo(due=due_time + timedelta(days=1))
+        with freeze_time('1970-01-01'):
+            t4 = Todo(due=10)
+            t5 = Todo(due=20)
+        due_time = arrow.get('2018-02-18T12:19')
+        due_datetime = due_time.datetime
+        with freeze_time(due_time.shift(days=-1).format()):
+            t6 = Todo(due=due_time)
+            t7 = Todo(due=due_time.shift(days=1))
 
         # Check comparison by name
         self.assertTrue(t1 <= t1)
@@ -206,9 +216,9 @@ class TestTodo(unittest.TestCase):
         self.assertFalse(t5 <= t4)
 
         # Check comparison with datetime
-        self.assertTrue(t4 <= due_time)
-        self.assertTrue(t6 <= due_time)
-        self.assertFalse(t7 <= due_time)
+        self.assertTrue(t4 <= due_datetime)
+        self.assertTrue(t6 <= due_datetime)
+        self.assertFalse(t7 <= due_datetime)
 
         # Check invalid call
         with self.assertRaises(NotImplementedError):
@@ -222,11 +232,14 @@ class TestTodo(unittest.TestCase):
         t1 = Todo()
         t2 = Todo(name='a')
         t3 = Todo(name='b')
-        t4 = Todo(due=10)
-        t5 = Todo(due=20)
-        due_time = datetime(2018, 2, 18, 12, 19, tzinfo=utc)
-        t6 = Todo(due=due_time)
-        t7 = Todo(due=due_time + timedelta(days=1))
+        with freeze_time('1970-01-01'):
+            t4 = Todo(due=10)
+            t5 = Todo(due=20)
+        due_time = arrow.get('2018-02-18T12:19')
+        due_datetime = due_time.datetime
+        with freeze_time(due_time.shift(days=-1).format()):
+            t6 = Todo(due=due_time)
+            t7 = Todo(due=due_time.shift(days=1))
 
         # Check comparison by name
         self.assertFalse(t1 > t1)
@@ -242,9 +255,9 @@ class TestTodo(unittest.TestCase):
         self.assertTrue(t5 > t4)
 
         # Check comparison with datetime
-        self.assertFalse(t4 > due_time)
-        self.assertFalse(t6 > due_time)
-        self.assertTrue(t7 > due_time)
+        self.assertFalse(t4 > due_datetime)
+        self.assertFalse(t6 > due_datetime)
+        self.assertTrue(t7 > due_datetime)
 
         # Check invalid call
         with self.assertRaises(NotImplementedError):
@@ -258,11 +271,14 @@ class TestTodo(unittest.TestCase):
         t1 = Todo()
         t2 = Todo(name='a')
         t3 = Todo(name='b')
-        t4 = Todo(due=10)
-        t5 = Todo(due=20)
-        due_time = datetime(2018, 2, 18, 12, 19, tzinfo=utc)
-        t6 = Todo(due=due_time)
-        t7 = Todo(due=due_time + timedelta(days=1))
+        with freeze_time('1970-01-01'):
+            t4 = Todo(due=10)
+            t5 = Todo(due=20)
+        due_time = arrow.get('2018-02-18T12:19')
+        due_datetime = due_time.datetime
+        with freeze_time(due_time.shift(days=-1).format()):
+            t6 = Todo(due=due_time)
+            t7 = Todo(due=due_time.shift(days=1))
 
         # Check comparison by name
         self.assertTrue(t1 >= t1)
@@ -278,9 +294,9 @@ class TestTodo(unittest.TestCase):
         self.assertTrue(t5 >= t4)
 
         # Check comparison with datetime
-        self.assertFalse(t4 >= due_time)
-        self.assertTrue(t6 >= due_time)
-        self.assertTrue(t7 >= due_time)
+        self.assertFalse(t4 >= due_datetime)
+        self.assertTrue(t6 >= due_datetime)
+        self.assertTrue(t7 >= due_datetime)
 
         # Check invalid call
         with self.assertRaises(NotImplementedError):
@@ -367,9 +383,10 @@ class TestTodo(unittest.TestCase):
         self.assertEqual(str(t), test_str)
 
     def test_output_due(self):
-        dtstamp = datetime(2018, 2, 19, 21, 00, tzinfo=utc)
-        due = datetime(2018, 2, 20, 1, 00, tzinfo=utc)
-        t = Todo(dtstamp=dtstamp, uid='Uid', due=due)
+        dtstamp = arrow.get('2018-02-19T21:00')
+        due = arrow.get('2018-02-20T01:00')
+        with freeze_time(dtstamp.format()):
+            t = Todo(dtstamp=dtstamp, uid='Uid', due=due)
 
         test_str = CRLF.join(("BEGIN:VTODO",
                               "DTSTAMP:20180219T210000Z",
@@ -386,7 +403,7 @@ class TestTodo(unittest.TestCase):
         self.assertEqual(t.description, "Yes, all of them;")
 
     def test_escape_output(self):
-        dtstamp = datetime(2018, 2, 19, 21, 00, tzinfo=utc)
+        dtstamp = arrow.get('2018-02-19T21:00')
         t = Todo(dtstamp=dtstamp, uid='Uid')
 
         t.name = "Hello, with \\ special; chars and \n newlines"
