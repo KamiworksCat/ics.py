@@ -2,6 +2,8 @@ import unittest
 import pytest
 from datetime import timedelta as td
 import arrow
+from freezegun import freeze_time
+
 from ics.event import Event
 from ics.icalendar import Calendar
 from ics.parse import Container
@@ -17,8 +19,8 @@ class TestEvent(unittest.TestCase):
 
     def test_event(self):
         e = Event(begin=0, end=20)
-        self.assertEqual(e.begin.timestamp, 0)
-        self.assertEqual(e.end.timestamp, 20)
+        self.assertEqual(e.begin.timestamp, arrow.utcnow().timestamp)
+        self.assertEqual(e.end.timestamp, arrow.utcnow().shift(days=20).timestamp)
         self.assertTrue(e.has_end())
         self.assertFalse(e.all_day)
 
@@ -32,11 +34,16 @@ class TestEvent(unittest.TestCase):
         g = Event(begin=0, end=10) | Event(begin=10, end=20)
         self.assertEqual(g, (None, None))
 
-        g = Event(begin=0, end=20) | Event(begin=10, end=30)
-        self.assertEqual(tuple(map(lambda x: x.timestamp, g)), (10, 20))
+        with freeze_time('1970-01-01'):
+            g = Event(begin=0, end=20) | Event(begin=10, end=30)
+            time = arrow.utcnow().shift(days=10)
+        self.assertEqual(tuple(map(lambda x: x.timestamp, g)),
+                         (time.timestamp, time.shift(days=10).timestamp))
 
-        g = Event(begin=0, end=20) | Event(begin=5, end=15)
-        self.assertEqual(tuple(map(lambda x: x.timestamp, g)), (5, 15))
+        with freeze_time('1970-01-01'):
+            g = Event(begin=0, end=20) | Event(begin=5, end=15)
+            time = arrow.utcnow().shift(days=5)
+        self.assertEqual(tuple(map(lambda x: x.timestamp, g)), (time.timestamp, time.shift(days=10).timestamp))
 
         g = Event() | Event()
         self.assertEqual(g, (None, None))
@@ -52,13 +59,15 @@ class TestEvent(unittest.TestCase):
             Calendar(cal13)
 
     def test_duration_output(self):
-        e = Event(begin=0, duration=td(1, 23))
+        with freeze_time('1970-01-01'):
+            e = Event(begin=0, duration=td(1, 23))
         lines = str(e).splitlines()
         self.assertIn('DTSTART:19700101T000000Z', lines)
         self.assertIn('DURATION:P1DT23S', lines)
 
     def test_make_all_day(self):
-        e = Event(begin=0, end=20)
+        with freeze_time('2018-06-11'):
+            e = Event(begin=0, end=0)
         begin = e.begin
         e.make_all_day()
         self.assertEqual(e.begin, begin)

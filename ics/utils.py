@@ -161,6 +161,9 @@ def get_arrow(value):
         return arrow.get(*value)
     elif isinstance(value, dict):
         return arrow.get(**value)
+    elif isinstance(value, int):
+        # If value is single int, this function will return days before/after the current date
+        return arrow.utcnow().shift(days=value)
     else:
         return arrow.get(value)
 
