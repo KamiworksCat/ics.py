@@ -51,7 +51,7 @@ Quickstart
         my_file.writelines(c)
     # and it's done !
 
-More examples are available in the `documentation <http://icspy.readthedocs.org/>`_.
+More examples are available in the `documentation <http://catcoder-icspy.readthedocs.io/en/latest/>`_.
 
 Documentation
 -------------
@@ -59,8 +59,8 @@ Documentation
 All the `documentation <http://icspy.readthedocs.org/>`_ is hosted on `readthedocs.org <http://readthedocs.org/>`_ and is updated automatically at every commit.
 
 * `Quickstart <http://icspy.readthedocs.org/>`_
-* `API <http://icspy.readthedocs.org/en/latest/api.html>`_
-* `About <http://icspy.readthedocs.org/en/latest/about.html>`_
+* `API <http://catcoder-icspy.readthedocs.io/en/latest/api.html>`_
+* `About <http://catcoder-icspy.readthedocs.io/en/latest/about.html>`_
 
 
 Contribute
