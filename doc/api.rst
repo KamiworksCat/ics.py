@@ -8,6 +8,15 @@ Calendar
     :members:
     :special-members:
 
+
+ToDo
+____
+
+.. autoclass:: ics.todo.Todo
+    :members:
+    :special-members:
+
+
 Event
 -----
 

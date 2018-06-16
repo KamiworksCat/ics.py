@@ -36,6 +36,21 @@ Create a new calendar and add events
     c.events
     # [<Event 'My cool event' begin:2014-01-01 00:00:00 end:2014-01-01 00:00:01>]
 
+New Upgrade to the Library!
+---------------------------
+     Note: A niffy upgrade has been added to the library.
+     Now you can do this!
+
+.. code-block:: python
+
+    # Assuming that today is 2018-06-16
+    from ics import Calendar, Event
+    c = Calendar()
+    e = Event(name="My cool Event", begin=0)
+    c.events.add(e)
+    c.events
+    # [<Event 'My cool Event' begin:2018-06-16T00:00:00+00:00 end:2018-06-16T00:00:00+00:00>]
+
 Export a Calendar to a file
 ---------------------------
 

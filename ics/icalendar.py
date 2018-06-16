@@ -35,8 +35,8 @@ class Calendar(Component):
 
         Args:
             imports (string or list of lines/strings): data to be imported into the Calendar(),
-            events (list of Event): :class:`ics.event.Event`s to be added to the calendar
-            todos (list of Todo): :class:`ics.event.Todo`s to be added to the calendar
+            events (list of Event): :class:`ics.event.Event` to be added to the calendar
+            todos (list of Todo): :class:`ics.todo.Todo` to be added to the calendar
             creator (string): uid of the creator program.
 
         If `imports` is specified, every other argument will be ignored.
