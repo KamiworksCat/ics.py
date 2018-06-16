@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals, absolute_import
 
-from six import StringIO, string_types, text_type, integer_types
+from six import StringIO, string_types, text_type
 
 from dateutil.tz import tzical
 import copy
@@ -120,7 +120,7 @@ class Calendar(Component):
     @creator.setter
     def creator(self, value):
         if not isinstance(value, text_type):
-            raise ValueError('Event.creator must be unicode data not {}'.format(type(value)))
+            raise ValueError(f'Event.creator must be unicode data not {type(value)}')
         self._creator = value
 
     def clone(self):

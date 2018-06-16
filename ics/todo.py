@@ -25,7 +25,6 @@ from .parse import ContentLine, Container
 
 
 class Todo(Component):
-
     """A todo list entry.
 
     Can have a start time and duration, or start and due time,
@@ -229,12 +228,12 @@ class Todo(Component):
         if self.name is None:
             return "<Todo>"
         if self.begin is None and self.due is None:
-            return "<Todo '{}'>".format(self.name)
+            return f"<Todo '{self.name}'>"
         if self.due is None:
-            return "<Todo '{}' begin:{}>".format(self.name, self.begin)
+            return f"<Todo '{self.name}' begin:{self.begin}>"
         if self.begin is None:
-            return "<Todo '{}' due:{}>".format(self.name, self.due)
-        return "<Todo '{}' begin:{} due:{}>".format(self.name, self.begin, self.due)
+            return f"<Todo '{self.name}' due:{self.due}>"
+        return f"<Todo '{self.name}' begin:{self.begin} due:{self.due}>"
 
     def __lt__(self, other):
         if isinstance(other, Todo):
@@ -252,7 +251,7 @@ class Todo(Component):
             if self.due:
                 return self.due < other
         raise NotImplementedError(
-            'Cannot compare Todo and {}'.format(type(other)))
+            f'Cannot compare Todo and {type(other)}')
 
     def __le__(self, other):
         if isinstance(other, Todo):
@@ -270,7 +269,7 @@ class Todo(Component):
             if self.due:
                 return self.due <= other
         raise NotImplementedError(
-            'Cannot compare Todo and {}'.format(type(other)))
+            f'Cannot compare Todo and {type(other)}')
 
     def __gt__(self, other):
         if isinstance(other, Todo):
@@ -288,7 +287,7 @@ class Todo(Component):
             if self.due:
                 return self.due > other
         raise NotImplementedError(
-            'Cannot compare Todo and {}'.format(type(other)))
+            f'Cannot compare Todo and {type(other)}')
 
     def __ge__(self, other):
         if isinstance(other, Todo):
@@ -306,21 +305,21 @@ class Todo(Component):
             if self.due:
                 return self.due >= other
         raise NotImplementedError(
-            'Cannot compare Todo and {}'.format(type(other)))
+            f'Cannot compare Todo and {type(other)}')
 
     def __eq__(self, other):
         """Two todos are considered equal if they have the same uid."""
         if isinstance(other, Todo):
             return self.uid == other.uid
         raise NotImplementedError(
-            'Cannot compare Todo and {}'.format(type(other)))
+            f'Cannot compare Todo and {type(other)}')
 
     def __ne__(self, other):
         """Two todos are considered not equal if they do not have the same uid."""
         if isinstance(other, Todo):
             return self.uid != other.uid
         raise NotImplementedError(
-            'Cannot compare Todo and {}'.format(type(other)))
+            f'Cannot compare Todo and {type(other)}')
 
     def clone(self):
         """
@@ -413,7 +412,7 @@ def url(todo, line):
 @Todo._extracts('DUE')
 def due(todo, line):
     if line:
-        #TODO: DRY [1]
+        # TODO: DRY [1]
         if todo._duration:
             raise ValueError("A todo can't have both DUE and DURATION")
         # get the dict of vtimezones passed to the classmethod
@@ -424,7 +423,7 @@ def due(todo, line):
 @Todo._extracts('DURATION')
 def duration(todo, line):
     if line:
-        #TODO: DRY [1]
+        # TODO: DRY [1]
         if todo._due_time:  # pragma: no cover
             raise ValueError("An todo can't have both DUE and DURATION")
         todo._duration = parse_duration(line.value)

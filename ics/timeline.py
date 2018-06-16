@@ -2,15 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals, absolute_import
+
 import heapq
 
-from six import StringIO, string_types, text_type, integer_types
-
-from arrow.arrow import Arrow
 import arrow
-
-from .utils import get_arrow
-from .event import Event
 
 
 class Timeline(object):
@@ -48,8 +43,8 @@ class Timeline(object):
             stop : (Arrow object)
         """
         for event in self:
-            if (start <= event.begin <= stop # if start is between the bonds
-            and start <= event.end <= stop): # and stop is between the bonds
+            if (start <= event.begin <= stop  # if start is between the bonds
+                    and start <= event.end <= stop):  # and stop is between the bonds
                 yield event
 
     def overlapping(self, start, stop):
@@ -61,9 +56,9 @@ class Timeline(object):
             stop : (Arrow object)
         """
         for event in self:
-            if ((start <= event.begin <= stop # if start is between the bonds
-            or start <= event.end <= stop) # or stop is between the bonds
-            or event.begin <= start and event.end >= stop): # or event is a superset of [start,stop]
+            if ((start <= event.begin <= stop  # if start is between the bonds
+                 or start <= event.end <= stop)  # or stop is between the bonds
+                    or event.begin <= start and event.end >= stop):  # or event is a superset of [start,stop]
                 yield event
 
     def start_after(self, instant):

@@ -3,13 +3,10 @@
 
 from __future__ import unicode_literals, absolute_import
 
-from six import StringIO, string_types, text_type, integer_types
-
 import warnings
 from collections import namedtuple
 
 from .utils import get_lines
-
 
 Extractor = namedtuple(
     'Extractor',
@@ -43,17 +40,15 @@ class Component(object):
                     lines = extractor.default
                     default_str = "\\n".join(map(str, extractor.default))
                     message = ("The %s property was not found and is required by the RFC." +
-                        " A default value of \"%s\" has been used instead") % (extractor.type, default_str)
+                               " A default value of \"%s\" has been used instead") % (extractor.type, default_str)
                     warnings.warn(message)
                 else:
                     raise ValueError(
-                        'A {} must have at least one {}'
-                        .format(container.name, extractor.type))
+                        f'A {container.name} must have at least one {extractor.type}')
 
             if not extractor.multiple and len(lines) > 1:
                 raise ValueError(
-                    'A {} must have at most one {}'
-                    .format(container.name, extractor.type))
+                    f'A {container.name} must have at most one {extractor.type}')
 
             if extractor.multiple:
                 extractor.function(self, lines)  # Send a list or empty list
@@ -76,6 +71,7 @@ class Component(object):
                 default=default)
             cls._EXTRACTORS.append(extractor)
             return fn
+
         return decorator
 
     @classmethod

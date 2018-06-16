@@ -149,11 +149,11 @@ class Alarm(Component):
         raise NotImplementedError('Base class cannot be instantiated directly')
 
     def __repr__(self):
-        value = '{0} trigger:{1}'.format(type(self), self.trigger)
+        value = f'{type(self)} trigger:{self.trigger}'
         if self.repeat:
-            value += ' repeat:{0} duration:{1}'.format(self.repeat, self.duration)
+            value += f' repeat:{self.repeat} duration:{self.duration}'
 
-        return '<{0}>'.format(value)
+        return f'<{value}>'
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -214,7 +214,7 @@ def o_trigger(alarm, container):
 
     if type(alarm.trigger) is timedelta:
         representation = timedelta_to_duration(alarm.trigger)
-        container.append(ContentLine('TRIGGER', value='-{0}'.format(representation)))
+        container.append(ContentLine('TRIGGER', value=f'-{representation}'))
     else:
         container.append(ContentLine('TRIGGER',
                                      params={'VALUE': ['DATE-TIME']},
@@ -268,13 +268,13 @@ class DisplayAlarm(Alarm):
         return 'DISPLAY'
 
     def __repr__(self):
-        value = '{0} trigger:{1}'.format(type(self), self.trigger)
+        value = f'{type(self)} trigger:{self.trigger}'
         if self.repeat:
-            value += ' repeat:{0} duration:{1}'.format(self.repeat, self.duration)
+            value += f' repeat:{self.repeat} duration:{self.duration}'
 
-        value += ' description:{0}'.format(self.description)
+        value += f' description:{self.description}'
 
-        return '<{0}>'.format(value)
+        return f'<{value}>'
 
 
 # ------------------
@@ -325,16 +325,16 @@ class AudioAlarm(Alarm):
         return 'AUDIO'
 
     def __repr__(self):
-        value = '{0} trigger:{1}'.format(type(self), self.trigger)
+        value = f'{type(self)} trigger:{self.trigger}'
         if self.repeat:
-            value += ' repeat:{0} duration:{1}'.format(self.repeat, self.duration)
+            value += f' repeat:{self.repeat} duration:{self.duration}'
 
         if self.attach:
-            value += ' attach:{0}'.format(self.attach)
+            value += f' attach:{self.attach}'
             if self.attach_params:
-                value += ' attach_params:{0}'.format(self.attach_params)
+                value += f' attach_params:{self.attach_params}'
 
-        return '<{0}>'.format(value)
+        return f'<{value}>'
 
 
 # ------------------

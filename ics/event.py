@@ -3,8 +3,6 @@
 
 from __future__ import unicode_literals, absolute_import
 
-from six import StringIO, string_types, text_type, integer_types
-
 import arrow
 import copy
 import re
@@ -28,7 +26,6 @@ from .parse import ContentLine, Container
 
 
 class Event(Component):
-
     """A calendar event.
 
     Can be full-day or between two instants.
@@ -246,30 +243,32 @@ class Event(Component):
         name = "'{}' ".format(self.name) if self.name else ''
         if self.all_day:
             if not self._end_time or self._begin == self._end_time:
-                return "<all-day Event {}{}>".format(name, self.begin.strftime('%Y-%m-%d'))
+                return f"<all-day Event {name}{self.begin.strftime('%Y-%m-%d')}>"
             else:
-                return "<all-day Event {}begin:{} end:{}>".format(name, self._begin.strftime('%Y-%m-%d'), self._end_time.strftime('%Y-%m-%d'))
+                return "<all-day Event {}begin:{} end:{}>".format(name,
+                                                                  self._begin.strftime('%Y-%m-%d'),
+                                                                  self._end_time.strftime('%Y-%m-%d'))
         elif self.begin is None:
-            return "<Event '{}'>".format(self.name) if self.name else "<Event>"
+            return f"<Event '{self.name}'>" if self.name else "<Event>"
         else:
-            return "<Event {}begin:{} end:{}>".format(name, self.begin, self.end)
+            return f"<Event {name}begin:{self.begin} end:{self.end}>"
 
     def starts_within(self, other):
         if not isinstance(other, Event):
             raise NotImplementedError(
-                'Cannot compare Event and {}'.format(type(other)))
-        return self.begin >= other.begin and self.begin <= other.end
+                f'Cannot compare Event and {type(other)}')
+        return other.begin <= self.begin <= other.end
 
     def ends_within(self, other):
         if not isinstance(other, Event):
             raise NotImplementedError(
-                'Cannot compare Event and {}'.format(type(other)))
-        return self.end >= other.begin and self.end <= other.end
+                f'Cannot compare Event and {type(other)}')
+        return other.begin <= self.end <= other.end
 
     def intersects(self, other):
         if not isinstance(other, Event):
             raise NotImplementedError(
-                'Cannot compare Event and {}'.format(type(other)))
+                f'Cannot compare Event and {type(other)}')
         return (self.starts_within(other)
                 or self.ends_within(other)
                 or other.starts_within(self)
@@ -281,15 +280,15 @@ class Event(Component):
         if isinstance(other, Event):
             return other.starts_within(self) and other.ends_within(self)
         if isinstance(other, datetime):
-            return self.begin <= other and self.end >= other
+            return self.begin <= other <= self.end
         raise NotImplementedError(
-            'Cannot compare Event and {}'.format(type(other)))
+            f'Cannot compare Event and {type(other)}')
 
     def is_included_in(self, other):
         if isinstance(other, Event):
             return other.includes(self)
         raise NotImplementedError(
-            'Cannot compare Event and {}'.format(type(other)))
+            f'Cannot compare Event and {type(other)}')
 
     __in__ = is_included_in
 
@@ -308,7 +307,7 @@ class Event(Component):
         if isinstance(other, datetime):
             return self.begin < other
         raise NotImplementedError(
-            'Cannot compare Event and {}'.format(type(other)))
+            f'Cannot compare Event and {type(other)}')
 
     def __le__(self, other):
         if isinstance(other, Event):
@@ -325,7 +324,7 @@ class Event(Component):
         if isinstance(other, datetime):
             return self.begin <= other
         raise NotImplementedError(
-            'Cannot compare Event and {}'.format(type(other)))
+            f'Cannot compare Event and {type(other)}')
 
     def __gt__(self, other):
         if isinstance(other, Event):
@@ -336,7 +335,7 @@ class Event(Component):
         if isinstance(other, datetime):
             return self.begin > other
         raise NotImplementedError(
-            'Cannot compare Event and {}'.format(type(other)))
+            f'Cannot compare Event and {type(other)}')
 
     def __ge__(self, other):
         if isinstance(other, Event):
@@ -347,7 +346,7 @@ class Event(Component):
         if isinstance(other, datetime):
             return self.begin >= other
         raise NotImplementedError(
-            'Cannot compare Event and {}'.format(type(other)))
+            f'Cannot compare Event and {type(other)}')
 
     def __or__(self, other):
         if isinstance(other, Event):
@@ -358,14 +357,14 @@ class Event(Component):
                 end = min(self.end, other.end)
             return (begin, end) if begin and end and begin < end else (None, None)
         raise NotImplementedError(
-            'Cannot compare Event and {}'.format(type(other)))
+            f'Cannot compare Event and {type(other)}')
 
     def __eq__(self, other):
         """Two events are considered equal if they have the same uid."""
         if isinstance(other, Event):
             return self.uid == other.uid
         raise NotImplementedError(
-            'Cannot compare Event and {}'.format(type(other)))
+            f'Cannot compare Event and {type(other)}')
 
     def time_equals(self, other):
         return (self.begin == other.begin) and (self.end == other.end)
@@ -394,7 +393,7 @@ class Event(Component):
                 event.end = self.end
 
             return event
-        raise ValueError('Cannot join {} with {}: they don\'t intersect.'.format(self, other))
+        raise ValueError(f'Cannot join {self} with {other}: they don\'t intersect.')
 
     __and__ = join
 
@@ -438,8 +437,8 @@ def start(event, line):
 @Event._extracts('DURATION')
 def duration(event, line):
     if line:
-        #TODO: DRY [1]
-        if event._end_time: # pragma: no cover
+        # TODO: DRY [1]
+        if event._end_time:  # pragma: no cover
             raise ValueError("An event can't have both DTEND and DURATION")
         event._duration = parse_duration(line.value)
 
@@ -447,7 +446,7 @@ def duration(event, line):
 @Event._extracts('DTEND')
 def end(event, line):
     if line:
-        #TODO: DRY [1]
+        # TODO: DRY [1]
         if event._duration:
             raise ValueError("An event can't have both DTEND and DURATION")
         # get the dict of vtimezones passed to the classmethod
@@ -495,6 +494,7 @@ def alarms(event, lines):
     def alarm_factory(x):
         af = AlarmFactory.get_type_from_container(x)
         return af._from_container(x)
+
     event.alarms = list(map(alarm_factory, lines))
 
 

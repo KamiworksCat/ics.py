@@ -39,7 +39,7 @@ class ContentLine:
         params_str = ''
         for pname in self.params:
             params_str += ';{}={}'.format(pname, ','.join(self.params[pname]))
-        return "{}{}:{}".format(self.name, params_str, self.value)
+        return f"{self.name}{params_str}:{self.value}"
 
     def __repr__(self):
         return "<ContentLine '{}' with {} parameter{}. Value='{}'>" \
@@ -59,7 +59,7 @@ class ContentLine:
     @classmethod
     def parse(cls, line):
         if ':' not in line:
-            raise ParseError("No ':' in line '{}'".format(line))
+            raise ParseError(f"No ':' in line '{line}'")
 
         # Separate key and value
         splitted = line.split(':', 1)
@@ -73,7 +73,7 @@ class ContentLine:
         params = {}
         for paramstr in params_strings:
             if '=' not in paramstr:
-                raise ParseError("No '=' in line '{}'".format(paramstr))
+                raise ParseError(f"No '=' in line '{paramstr}'")
             pname, pvals = paramstr.split('=', 1)
             params[pname] = pvals.split(',')
         return cls(name, params, value)
@@ -115,7 +115,7 @@ class Container(list):
             elif line.name == 'END':
                 if line.value != name:
                     raise ParseError(
-                        "Expected END:{}, got END:{}".format(name, line.value))
+                        f"Expected END:{name}, got END:{line.value}")
                 break
             else:
                 items.append(line)
@@ -169,6 +169,7 @@ def lines_to_container(lines):
 def string_to_container(txt):
     return lines_to_container(txt.splitlines())
 
+
 if __name__ == "__main__":
     from tests.fixture import cal1
 
@@ -181,8 +182,6 @@ if __name__ == "__main__":
         elif isinstance(elem, ContentLine):
             print("{}{}{}".format('   ' * lvl,
                   elem.name, elem.params, elem.value))
-        else:
-            print('Wuuut?')
 
     cal = string_to_container(cal1)
     print_tree(cal)
